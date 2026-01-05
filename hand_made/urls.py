@@ -26,6 +26,7 @@ urlpatterns = [
     # Legacy redirects
     path('keychains/', views.keychains, name='keychains'),
     path('frames/', views.frames, name='frames'),
+    path('checkout/', views.checkout, name='checkout'),
 ]
 
 if settings.DEBUG:

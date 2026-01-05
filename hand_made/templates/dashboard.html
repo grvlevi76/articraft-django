@@ -2,61 +2,348 @@
 {% load static %}
 
 {% block content %}
-<div class="container section">
-    <div class="dashboard-container">
-        <!-- Header -->
-        <div class="dashboard-header">
-            <div class="dashboard-avatar">
-                <i class="fas fa-user-circle"></i>
+<style>
+    /* Premium Dashboard Styles - Injected to bypass cache */
+    .dashboard-wrapper {
+        min-height: 80vh;
+        background: linear-gradient(135deg, #fdfbf7 0%, #fff 100%);
+        padding: 4rem 0;
+    }
+
+    .dashboard-container {
+        max-width: 1100px;
+        margin: 0 auto;
+    }
+
+    /* Welcome Banner */
+    .welcome-banner {
+        background: linear-gradient(135deg, var(--primary-color), #d97706);
+        border-radius: var(--radius-xl);
+        padding: 3rem;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: 3rem;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .welcome-banner::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        background: url('data:image/svg+xml,<svg width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><circle cx="2" cy="2" r="2" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+        opacity: 0.3;
+    }
+
+    .user-avatar-large {
+        width: 100px;
+        height: 100px;
+        background: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: var(--primary-color);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        z-index: 1;
+    }
+
+    .welcome-text {
+        z-index: 1;
+    }
+
+    .welcome-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        font-family: 'Playfair Display', serif;
+    }
+
+    .welcome-subtitle {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+
+    /* Dashboard Grid */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+
+    .feature-card {
+        background: white;
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        border-color: var(--primary-color);
+    }
+
+    .card-icon-wrapper {
+        width: 3.5rem;
+        height: 3.5rem;
+        background: var(--bg-body);
+        border-radius: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+    }
+
+    .feature-card:hover .card-icon-wrapper {
+        background: var(--primary-color);
+        color: white;
+        transform: rotate(-5deg) scale(1.1);
+    }
+
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text-main);
+    }
+
+    .card-desc {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+        flex-grow: 1;
+    }
+
+    .card-link {
+        color: var(--primary-color);
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: gap 0.3s ease;
+    }
+
+    .feature-card:hover .card-link {
+        gap: 0.75rem;
+    }
+
+    /* Quick Actions Section */
+    .quick-actions {
+        background: white;
+        border-radius: var(--radius-xl);
+        padding: 3rem;
+        text-align: center;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1.5rem;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-action {
+        padding: 1rem 2rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-qty-action:hover {
+        background: var(--primary-color);
+        color: white;
+        border-color: var(--primary-color);
+    }
+
+    /* Status Badges */
+    .status-badge {
+        padding: 0.4rem 0.8rem;
+        border-radius: 9999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .status-delivered {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-shipped {
+        background: #dbeafe;
+        color: #1e40af;
+    }
+
+    .status-cancelled {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .status-pending {
+        background: #fef9c3;
+        color: #854d0e;
+    }
+
+    .btn-action-primary {
+        background: var(--primary-color);
+        color: white;
+        box-shadow: 0 4px 6px -1px rgba(217, 119, 6, 0.3);
+    }
+
+    .btn-action-primary:hover {
+        background: var(--primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(217, 119, 6, 0.4);
+    }
+
+    .btn-action-secondary {
+        background: white;
+        border: 2px solid var(--border-color);
+        color: var(--text-main);
+    }
+
+    .btn-action-secondary:hover {
+        border-color: #ef4444;
+        color: #ef4444;
+        background: #fef2f2;
+    }
+</style>
+
+<div class="dashboard-wrapper">
+    <div class="container dashboard-container">
+
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <div class="user-avatar-large">
+                <i class="fas fa-user"></i>
             </div>
-            <h1 class="dashboard-title font-display gradient-text">Welcome, {{ user.username }}!</h1>
-            <p class="dashboard-email">{{ user.email }}</p>
+            <div class="welcome-text">
+                <h1 class="welcome-title">Welcome back, {{ user.username }}!</h1>
+                <p class="welcome-subtitle">{{ user.email }} • Member since {{ user.date_joined|date:"F Y" }}</p>
+            </div>
         </div>
 
-        <!-- Dashboard Cards -->
+        <!-- Dashboard Grid -->
         <div class="dashboard-grid">
-            <div class="dashboard-card">
-                <div class="dashboard-card-icon">
-                    <i class="fas fa-shopping-bag"></i>
+            <!-- Orders Card -->
+            <div class="feature-card">
+                <div class="card-icon-wrapper">
+                    <i class="fas fa-box-open"></i>
                 </div>
-                <h3 class="dashboard-card-title">Orders</h3>
-                <p class="dashboard-card-description">Track your order history</p>
-                <a href="#" class="dashboard-card-link">
-                    View Orders <i class="fas fa-arrow-right"></i>
+                <h3 class="card-title">My Orders</h3>
+                <p class="card-desc">Track your active orders, view purchase history, and download invoices.</p>
+                <a href="#" class="card-link">
+                    View History <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
 
-            <div class="dashboard-card">
-                <div class="dashboard-card-icon">
+            <!-- Wishlist Card -->
+            <div class="feature-card">
+                <div class="card-icon-wrapper">
                     <i class="fas fa-heart"></i>
                 </div>
-                <h3 class="dashboard-card-title">Wishlist</h3>
-                <p class="dashboard-card-description">Your favorite items</p>
-                <a href="#" class="dashboard-card-link">
+                <h3 class="card-title">My Wishlist</h3>
+                <p class="card-desc">Curated collection of your favorite handcrafted items saved for later.</p>
+                <a href="#" class="card-link">
                     View Wishlist <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
 
-            <div class="dashboard-card">
-                <div class="dashboard-card-icon">
-                    <i class="fas fa-cog"></i>
+            <!-- Profile Card -->
+            <div class="feature-card">
+                <div class="card-icon-wrapper">
+                    <i class="fas fa-user-cog"></i>
                 </div>
-                <h3 class="dashboard-card-title">Settings</h3>
-                <p class="dashboard-card-description">Manage your account</p>
-                <a href="#" class="dashboard-card-link">
+                <h3 class="card-title">Account Settings</h3>
+                <p class="card-desc">Manage your personal information, shipping addresses, and security.</p>
+                <a href="#" class="card-link">
                     Edit Profile <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
         </div>
 
+        <!-- Order History Section -->
+        <div class="dashboard-section" style="margin-top: 4rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 class="dashboard-actions-title" style="margin-bottom: 0;">Recent Orders</h2>
+                <span style="color: var(--text-muted); font-size: 0.9rem;">Total Orders: {{ orders.count }}</span>
+            </div>
+
+            {% if orders %}
+            <div class="cart-items-container" style="box-shadow: none; border: 1px solid var(--border-color);">
+                <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                    <thead>
+                        <tr style="background: var(--bg-body); border-bottom: 1px solid var(--border-color);">
+                            <th style="padding: 1.5rem;">Order ID</th>
+                            <th style="padding: 1.5rem;">Date</th>
+                            <th style="padding: 1.5rem;">Status</th>
+                            <th style="padding: 1.5rem;">Method</th>
+                            <th style="padding: 1.5rem; text-align: right;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 1.5rem; font-weight: 600;">#{{ order.id }}</td>
+                            <td style="padding: 1.5rem; color: var(--text-muted);">{{ order.created_at|date:"d M, Y" }}
+                            </td>
+                            <td style="padding: 1.5rem;">
+                                <span class="status-badge status-{{ order.status|lower }}">
+                                    {{ order.status }}
+                                </span>
+                            </td>
+                            <td style="padding: 1.5rem; font-size: 0.9rem;">{{ order.get_payment_method_display }}</td>
+                            <td style="padding: 1.5rem; text-align: right; font-weight: 700;" class="gradient-text">
+                                ₹{{order.total_price}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div
+                style="text-align: center; padding: 4rem; background: white; border-radius: var(--radius-xl); border: 1px dashed var(--border-color);">
+                <i class="fas fa-box-open"
+                    style="font-size: 3rem; color: var(--border-color); margin-bottom: 1rem;"></i>
+                <p style="color: var(--text-muted);">No orders found. Happy shopping!</p>
+            </div>
+            {% endif %}
+        </div>
+
         <!-- Quick Actions -->
-        <div class="dashboard-actions">
-            <h2 class="dashboard-actions-title">Quick Actions</h2>
-            <div class="dashboard-actions-buttons">
-                <a href="{% url 'shop' %}" class="btn-dashboard btn-dashboard-primary">
-                    <i class="fas fa-shopping-bag"></i> Continue Shopping
+        <div class="quick-actions">
+            <h2 style="font-size: 1.5rem; font-weight: 600;">Ready to explore more?</h2>
+            <div class="action-buttons">
+                <a href="{% url 'shop' %}" class="btn-action btn-action-primary">
+                    <i class="fas fa-shopping-bag"></i> Browse Collection
                 </a>
-                <a href="{% url 'logout' %}" class="btn-dashboard btn-dashboard-secondary">
+                <a href="{% url 'logout' %}" class="btn-action btn-action-secondary">
                     <i class="fas fa-sign-out-alt"></i> Sign Out
                 </a>
             </div>

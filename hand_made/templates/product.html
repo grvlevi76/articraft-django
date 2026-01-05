@@ -21,16 +21,12 @@
                     {% if product.image %}
                     <img src="{{ product.image.url }}" alt="{{ product.name }}">
                     {% else %}
-                    <div
-                        style="width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 6rem; opacity: 0.3;">
-                        🎨</div>
+                    <div class="placeholder-image">🎨</div>
                     {% endif %}
                 </div>
 
                 {% if not product.available %}
-                <div class="product-badge out-of-stock-badge" style="position: absolute; top: 1.5rem; right: 1.5rem;">
-                    OUT OF STOCK
-                </div>
+                <div class="product-badge out-of-stock-badge">OUT OF STOCK</div>
                 {% endif %}
             </div>
 
@@ -41,9 +37,7 @@
                 <h1 class="product-detail-title font-display">{{ product.name }}</h1>
 
                 <p class="product-detail-description">
-                    {{ product.description|default:"This beautiful handcrafted piece is made with love and attention to
-                    detail. Perfect for gifting or adding a unique touch to your space." }}
-                </p>
+                    {{ product.description|default:"This beautiful handcrafted piece is made with love and attention todetail. Perfect for gifting or adding a unique touch to your space." }}</p>
 
                 <!-- Price -->
                 <div class="product-price-section">
@@ -64,7 +58,7 @@
                         Add to Cart
                     </a>
                     {% else %}
-                    <button disabled class="btn-add-to-cart" style="background: var(--gray-300); cursor: not-allowed;">
+                    <button disabled class="btn-add-to-cart disabled">
                         Out of Stock
                     </button>
                     {% endif %}
@@ -99,195 +93,74 @@
                             <p class="product-info-label">Craftsmanship</p>
                             <p class="product-info-value">100% Handmade</p>
                         </div>
-                        {% extends 'base.html' %}
-                        {% load static %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                        {% block content %}
-                        <div class="container section">
-                            <!-- Breadcrumb -->
-                            <nav class="breadcrumb">
-                                <a href="{% url 'index' %}">Home</a>
-                                <i class="fas fa-chevron-right"></i>
-                                <a href="{% url 'shop' %}">Shop</a>
-                                <i class="fas fa-chevron-right"></i>
-                                <span>{{ product.name }}</span>
-                            </nav>
+    <!-- Reviews Section -->
+    <div class="review-section">
+        <h2 class="section-title font-display">Customer Reviews</h2>
 
-                            <div class="product-detail">
-                                <div class="product-detail-grid">
+        {% if product.reviews.all %}
+        {% for review in product.reviews.all %}
+        <div class="review-card">
+            <div class="review-header">
+                <span class="review-author">{{ review.user.username }}</span>
+                <span class="review-date">{{ review.created_at|date:"F j, Y" }}</span>
+            </div>
+            <div class="review-stars">
+                {% for i in "12345"|make_list %}
+                {% if forloop.counter <= review.rating %} <i class="fas fa-star"></i>
+                    {% else %}
+                    <i class="far fa-star"></i>
+                    {% endif %}
+                    {% endfor %}
+            </div>
+            <p class="review-text">{{ review.comment }}</p>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="no-reviews">No reviews yet. Be the first to review this product!</p>
+        {% endif %}
 
-                                    <!-- Product Image -->
-                                    <div class="product-detail-image">
-                                        <div class="product-image-container">
-                                            {% if product.image %}
-                                            <img src="{{ product.image.url }}" alt="{{ product.name }}">
-                                            {% else %}
-                                            <div
-                                                style="width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 6rem; opacity: 0.3;">
-                                                🎨</div>
-                                            {% endif %}
-                                        </div>
+        <!-- Add Review Form -->
+        {% if user.is_authenticated %}
+        <div class="review-form-card">
+            <h3>Write a Review</h3>
+            <form>
+                <div class="form-group">
+                    <label>Rating</label>
+                    <select class="form-input">
+                        <option value="5">5 Stars - Excellent</option>
+                        <option value="4">4 Stars - Good</option>
+                        <option value="3">3 Stars - Average</option>
+                        <option value="2">2 Stars - Fair</option>
+                        <option value="1">1 Star - Poor</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Review</label>
+                    <textarea rows="4" class="form-input" placeholder="Share your thoughts..."></textarea>
+                </div>
+                <button type="button" class="btn-primary">Submit Review</button>
+            </form>
+        </div>
+        {% else %}
+        <div class="login-prompt">
+            <p>Please <a href="{% url 'login' %}">login</a> to write a review.</p>
+        </div>
+        {% endif %}
+    </div>
 
-                                        {% if not product.available %}
-                                        <div class="product-badge out-of-stock-badge"
-                                            style="position: absolute; top: 1.5rem; right: 1.5rem;">
-                                            OUT OF STOCK
-                                        </div>
-                                        {% endif %}
-                                    </div>
-
-                                    <!-- Product Details -->
-                                    <div class="product-detail-content">
-                                        <div class="product-category-badge">{{ product.category.name }}</div>
-
-                                        <h1 class="product-detail-title font-display">{{ product.name }}</h1>
-
-                                        <p class="product-detail-description">
-                                            {{ product.description|default:"This beautiful handcrafted piece is made
-                                            with love and attention to
-                                            detail. Perfect for gifting or adding a unique touch to your space." }}
-                                        </p>
-
-                                        <!-- Price -->
-                                        <div class="product-price-section">
-                                            <span class="product-detail-price gradient-text">₹{{ product.price }}</span>
-                                            {% if product.available %}
-                                            <span class="stock-badge">
-                                                <i class="fas fa-check-circle"></i>
-                                                In Stock
-                                            </span>
-                                            {% endif %}
-                                        </div>
-
-                                        <!-- Actions -->
-                                        <div class="product-actions">
-                                            {% if product.available %}
-                                            <a href="{% url 'add_to_cart' product.id %}" class="btn-add-to-cart">
-                                                <i class="fas fa-shopping-cart"></i>
-                                                Add to Cart
-                                            </a>
-                                            {% else %}
-                                            <button disabled class="btn-add-to-cart"
-                                                style="background: var(--gray-300); cursor: not-allowed;">
-                                                Out of Stock
-                                            </button>
-                                            {% endif %}
-
-                                            <button class="btn-wishlist">
-                                                <i class="far fa-heart"></i>
-                                                Wishlist
-                                            </button>
-                                        </div>
-
-                                        <!-- Product Info -->
-                                        <div class="product-info-card">
-                                            <div class="product-info-item">
-                                                <i class="fas fa-tag"></i>
-                                                <div>
-                                                    <p class="product-info-label">Category</p>
-                                                    <p class="product-info-value">{{ product.category.name }}</p>
-                                                </div>
-                                            </div>
-
-                                            <div class="product-info-item">
-                                                <i class="fas fa-barcode"></i>
-                                                <div>
-                                                    <p class="product-info-label">Product ID</p>
-                                                    <p class="product-info-value">HM-{{ product.id|stringformat:"04d" }}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <div class="product-info-item">
-                                                <i class="fas fa-hand-sparkles"></i>
-                                                <div>
-                                                    <p class="product-info-label">Craftsmanship</p>
-                                                    <p class="product-info-value">100% Handmade</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Reviews Section -->
-                            <div class="review-section">
-                                <h2 class="section-title font-display" style="margin-bottom: 2rem;">Customer Reviews
-                                </h2>
-
-                                {% if product.reviews.all %}
-                                {% for review in product.reviews.all %}
-                                <div class="review-card">
-                                    <div class="review-header">
-                                        <span class="review-author">{{ review.user.username }}</span>
-                                        <span class="review-date">{{ review.created_at|date:"F j, Y" }}</span>
-                                    </div>
-                                    <div class="review-stars">
-                                        {% for i in "12345"|make_list %}
-                                        {% if forloop.counter <= review.rating %} <i class="fas fa-star"></i>
-                                            {% else %}
-                                            <i class="far fa-star"></i>
-                                            {% endif %}
-                                            {% endfor %}
-                                    </div>
-                                    <p class="review-text">{{ review.comment }}</p>
-                                </div>
-                                {% endfor %}
-                                {% else %}
-                                <p style="color: var(--text-muted); margin-bottom: 2rem;">No reviews yet. Be the first
-                                    to review this product!</p>
-                                {% endif %}
-
-                                <!-- Add Review Form (Placeholder - Backend logic needed) -->
-                                {% if user.is_authenticated %}
-                                <div
-                                    style="margin-top: 3rem; background: white; padding: 2rem; border-radius: var(--radius-lg); border: 1px solid var(--border-color);">
-                                    <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem;">Write a
-                                        Review</h3>
-                                    <form>
-                                        <div style="margin-bottom: 1rem;">
-                                            <label
-                                                style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Rating</label>
-                                            <select
-                                                style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);">
-                                                <option value="5">5 Stars - Excellent</option>
-                                                <option value="4">4 Stars - Good</option>
-                                                <option value="3">3 Stars - Average</option>
-                                                <option value="2">2 Stars - Fair</option>
-                                                <option value="1">1 Star - Poor</option>
-                                            </select>
-                                        </div>
-                                        <div style="margin-bottom: 1rem;">
-                                            <label
-                                                style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Review</label>
-                                            <textarea rows="4"
-                                                style="width: 100%; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: var(--radius-md);"
-                                                placeholder="Share your thoughts..."></textarea>
-                                        </div>
-                                        <button type="button" class="btn-primary">Submit Review</button>
-                                    </form>
-                                </div>
-                                {% else %}
-                                <div
-                                    style="margin-top: 2rem; padding: 1rem; background: #f3f4f6; border-radius: var(--radius-md); text-align: center;">
-                                    <p>Please <a href="{% url 'login' %}"
-                                            style="color: var(--primary-color); font-weight: 600;">login</a> to write a
-                                        review.</p>
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <!-- Related Products Section -->
-                            <div style="margin-top: 5rem;">
-                                <h2 class="section-title font-display gradient-text"
-                                    style="text-align: center; margin-bottom: 2rem;">You Might
-                                    Also Like</h2>
-                                <div
-                                    style="background: linear-gradient(to bottom right, #f3e8ff, #fce7f3); border-radius: var(--radius-xl); padding: 2rem; text-align: center;">
-                                    <div style="font-size: 4rem; margin-bottom: 1rem;">✨</div>
-                                    <p style="color: var(--gray-600); font-size: 1.125rem;">More amazing products coming
-                                        soon!</p>
-                                </div>
-                            </div>
-                        </div>
-                        {% endblock %}
+    <!-- Related Products Section -->
+    <div class="related-products-section">
+        <h2 class="section-title font-display gradient-text">You Might Also Like</h2>
+        <div class="related-products-placeholder">
+            <div class="placeholder-icon">✨</div>
+            <p>More amazing products coming soon!</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
