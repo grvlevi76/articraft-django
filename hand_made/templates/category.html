@@ -129,6 +129,19 @@
                         </div>
                         {% endif %}
 
+                        <!-- Wishlist Toggle -->
+                        <div class="product-wishlist-toggle"
+                            style="position: absolute; top: 3.5rem; right: 1rem; z-index: 10;">
+                            <a href="{% url 'toggle_wishlist' product.id %}?next={{ request.get_full_path|urlencode }}"
+                                style="width: 40px; height: 40px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ef4444; border: 1px solid rgba(0,0,0,0.05); box-shadow: var(--shadow-sm); transition: all 0.3s ease; text-decoration: none;"
+                                onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='var(--shadow-md)';"
+                                onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='var(--shadow-sm)';"
+                                title="{% if user.is_authenticated and product in user.wishlist.products.all %}Remove from Wishlist{% else %}Add to Wishlist{% endif %}">
+                                <i
+                                    class="{% if user.is_authenticated and product in user.wishlist.products.all %}fas{% else %}far{% endif %} fa-heart"></i>
+                            </a>
+                        </div>
+
                         <!-- Quick view overlay -->
                         <div class="product-overlay">
                             <a href="{% url 'product_detail' product.slug %}" class="btn-quick-view">Quick View</a>
@@ -137,7 +150,8 @@
 
                     <!-- Content -->
                     <div class="product-content">
-                        <h3><a href="{% url 'product_detail' product.slug %}" class="product-title">{{product.name}}</a></h3>
+                        <h3><a href="{% url 'product_detail' product.slug %}" class="product-title">{{product.name}}</a>
+                        </h3>
                         <p class="product-description">{{ product.description|default:"Handcrafted with love" }}</p>
 
                         <div class="product-footer">

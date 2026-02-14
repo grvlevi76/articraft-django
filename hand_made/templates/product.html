@@ -37,11 +37,20 @@
                 <h1 class="product-detail-title font-display">{{ product.name }}</h1>
 
                 <p class="product-detail-description">
-                    {{ product.description|default:"This beautiful handcrafted piece is made with love and attention todetail. Perfect for gifting or adding a unique touch to your space." }}</p>
+                    {{ product.description }}</p>
 
-                <!-- Price -->
+                <!-- Price & Rating -->
                 <div class="product-price-section">
-                    <span class="product-detail-price gradient-text">₹{{ product.price }}</span>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <span class="product-detail-price gradient-text">₹{{ product.price }}</span>
+                        {% if product.review_count > 0 %}
+                        <div class="review-stars" style="font-size: 1rem; color: #F59E0B;">
+                            {% for is_full in product.rating_stars %}
+                            <i class="{% if is_full %}fas{% else %}far{% endif %} fa-star"></i>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
                     {% if product.available %}
                     <span class="stock-badge">
                         <i class="fas fa-check-circle"></i>
@@ -63,10 +72,11 @@
                     </button>
                     {% endif %}
 
-                    <button class="btn-wishlist">
-                        <i class="far fa-heart"></i>
-                        Wishlist
-                    </button>
+                    <a href="{% url 'toggle_wishlist' product.id %}?next={{ request.path|urlencode }}"
+                        class="btn-wishlist">
+                        <i
+                            class="{% if user.is_authenticated and product in user.wishlist.products.all %}fas{% else %}far{% endif %} fa-heart"></i>Wishlist
+                    </a>
                 </div>
 
                 <!-- Product Info -->
@@ -101,55 +111,87 @@
 
     <!-- Reviews Section -->
     <div class="review-section">
-        <h2 class="section-title font-display">Customer Reviews</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h2 class="section-title font-display" style="margin-bottom: 0;">Customer Reviews</h2>
+            <div style="text-align: right;">
+                <span style="font-size: 1.5rem; font-weight: 700; color: var(--text-main);">{{product.average_rating|stringformat:".1f" }}</span>
+                <div class="review-stars" style="color: #F59E0B;">
+                    {% for is_full in product.rating_stars %}
+                    <i class="{% if is_full %}fas{% else %}far{% endif %} fa-star"></i>
+                    {% endfor %}
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">Based on {{ product.review_count }} reviews</p>
+            </div>
+        </div>
 
-        {% if product.reviews.all %}
-        {% for review in product.reviews.all %}
+        {% if reviews %}
+        {% for review in reviews %}
         <div class="review-card">
             <div class="review-header">
-                <span class="review-author">{{ review.user.username }}</span>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <span class="review-author">{{ review.user.username }}</span>
+                    {% if review.user == user %}
+                    <a href="{% url 'delete_review' review.id %}"
+                        style="color: #ef4444; font-size: 0.8rem; text-decoration: none;"
+                        onclick="return confirm('Delete this review?')">
+                        <i class="fas fa-trash"></i> Delete
+                    </a>
+                    {% endif %}
+                </div>
                 <span class="review-date">{{ review.created_at|date:"F j, Y" }}</span>
             </div>
-            <div class="review-stars">
-                {% for i in "12345"|make_list %}
-                {% if forloop.counter <= review.rating %} <i class="fas fa-star"></i>
-                    {% else %}
-                    <i class="far fa-star"></i>
-                    {% endif %}
-                    {% endfor %}
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.5rem;">
+                <div class="review-stars" style="color: #F59E0B;">
+                    {% for i in "12345"|make_list %}
+                    {% if forloop.counter <= review.rating %} <i class="fas fa-star"></i>
+                        {% else %}
+                        <i class="far fa-star"></i>
+                        {% endif %}
+                        {% endfor %}
+                </div>
+                {% if is_verified and review.user == user %}
+                <span
+                    style="font-size: 0.75rem; color: #059669; background: #ecfdf5; padding: 0.1rem 0.5rem; border-radius: 9999px; font-weight: 600;">
+                    <i class="fas fa-check-circle"></i> Verified Purchase
+                </span>
+                {% endif %}
             </div>
             <p class="review-text">{{ review.comment }}</p>
         </div>
         {% endfor %}
         {% else %}
-        <p class="no-reviews">No reviews yet. Be the first to review this product!</p>
+        <div
+            style="text-align: center; padding: 3rem; background: var(--bg-body); border-radius: var(--radius-lg); border: 1px dashed var(--border-color);">
+            <i class="far fa-comment-dots"
+                style="font-size: 3rem; color: var(--border-color); margin-bottom: 1rem; display: block;"></i>
+            <p class="no-reviews">No reviews yet. Be the first to review this product!</p>
+        </div>
         {% endif %}
 
         <!-- Add Review Form -->
         {% if user.is_authenticated %}
         <div class="review-form-card">
-            <h3>Write a Review</h3>
-            <form>
+            <h3 style="margin-bottom: 2rem; font-family: 'Playfair Display', serif;">Write a Review</h3>
+            <form method="POST">
+                {% csrf_token %}
                 <div class="form-group">
-                    <label>Rating</label>
-                    <select class="form-input">
-                        <option value="5">5 Stars - Excellent</option>
-                        <option value="4">4 Stars - Good</option>
-                        <option value="3">3 Stars - Average</option>
-                        <option value="2">2 Stars - Fair</option>
-                        <option value="1">1 Star - Poor</option>
-                    </select>
+                    <label class="form-label">Rating</label>
+                    {{ form.rating }}
                 </div>
                 <div class="form-group">
-                    <label>Review</label>
-                    <textarea rows="4" class="form-input" placeholder="Share your thoughts..."></textarea>
+                    <label class="form-label">Review</label>
+                    {{ form.comment }}
                 </div>
-                <button type="button" class="btn-primary">Submit Review</button>
+                <button type="submit" class="btn-submit" style="width: auto; padding: 1rem 3rem;">
+                    Post Review
+                </button>
             </form>
         </div>
         {% else %}
-        <div class="login-prompt">
-            <p>Please <a href="{% url 'login' %}">login</a> to write a review.</p>
+        <div
+            style="text-align: center; padding: 3rem; background: #fef2f2; border-radius: var(--radius-lg); border: 1px solid #fee2e2; margin-top: 3rem;">
+            <p>Please <a href="{% url 'login' %}?next={{ request.path }}" class="gradient-text"
+                    style="font-weight: 600; text-decoration: none;">login</a> to write a review.</p>
         </div>
         {% endif %}
     </div>

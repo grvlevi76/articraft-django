@@ -26,6 +26,22 @@ class Product(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def average_rating(self):
+        reviews = self.reviews.all()
+        if not reviews:
+            return 0
+        return sum(r.rating for r in reviews) / len(reviews)
+
+    @property
+    def review_count(self):
+        return self.reviews.count()
+
+    @property
+    def rating_stars(self):
+        avg = self.average_rating
+        return [i <= avg for i in range(1, 6)]
+
     def __str__(self):
         return self.name
 
@@ -107,3 +123,11 @@ class OrderItem(models.Model):
     @property
     def total_price(self):
         return self.price * self.quantity
+
+class Wishlist(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='wishlist')
+    products = models.ManyToManyField(Product, related_name='wishlisted_by', blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Wishlist for {self.user.username}"

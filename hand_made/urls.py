@@ -27,6 +27,13 @@ urlpatterns = [
     path('keychains/', views.keychains, name='keychains'),
     path('frames/', views.frames, name='frames'),
     path('checkout/', views.checkout, name='checkout'),
+
+    # New Dashboard Features
+    path('wishlist/', views.wishlist_view, name='wishlist'),
+    path('wishlist/toggle/<int:product_id>/', views.toggle_wishlist, name='toggle_wishlist'),
+    path('orders/', views.orders_view, name='orders'),
+    path('settings/', views.settings_view, name='settings'),
+    path('review/delete/<int:review_id>/', views.delete_review, name='delete_review'),
 ]
 
 if settings.DEBUG:
