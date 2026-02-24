@@ -58,10 +58,6 @@ jobs:
             docker pull ${{secrets.DOCKERHUB_USERNAME}}/articraft
             docker stop articraft || true
             docker rm articraft || true
-            docker run -d \
-              -p 80:8000 \
-              --name articraft \  
-              -e DATABASE_URL='${{secrets.DATABASE_URL}}' \
-              ${{ secrets.DOCKERHUB_USERNAME }}/articraft
+            docker run -d -p 80:8000 -e DATABASE_URL='${{secrets.DATABASE_URL}}' --name articraft ${{ secrets.DOCKERHUB_USERNAME }}/articraft
 
             
