@@ -56,7 +56,10 @@ jobs:
           key: ${{secrets.EC2_SSH_KEY}}
           script: |
             rm docker-compose.yml || true
+            rm nginx/default.conf || true
+            rm .env || true
             wget https://github.com/grvlevi76/articraft-django/blob/main/docker-compose.yml
+            wget https://github.com/grvlevi76/articraft-django/tree/main/nginx
             docker pull ${{secrets.DOCKERHUB_USERNAME}}/articraft
             docker stop articraft || true
             docker rm articraft || true
