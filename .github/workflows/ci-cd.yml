@@ -61,5 +61,5 @@ jobs:
             cd nginx
             wget https://github.com/grvlevi76/articraft-django/blob/main/nginx/default.conf
             cd ..
-            docker-compose up -d --build 
+            docker compose up -d --build 
             
