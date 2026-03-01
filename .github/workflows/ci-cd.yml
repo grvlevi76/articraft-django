@@ -56,11 +56,10 @@ jobs:
           key: ${{secrets.EC2_SSH_KEY}}
           script: |
             //intall docker here in EC2 instance to run docker compose command
-            rm docker-compose.yml || true
-            rm nginx/default.conf || true
-            wget https://github.com/grvlevi76/articraft-django/blob/main/docker-compose.yml
-            cd nginx
-            wget https://github.com/grvlevi76/articraft-django/blob/main/nginx/default.conf
-            cd ..
+            git clone https://github.com/grvlevi76/articraft-django || true
+            cd articraft-django/
+            git pull https://github.com/grvlevi76/articraft-django || true 
             docker-compose up -d --build 
             
+
+
