@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   web:
-    image: grvlevi76/articraft
+    build: .
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media
