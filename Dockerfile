@@ -8,6 +8,7 @@ WORKDIR /app
 
 COPY requirements.txt /app/requirements.txt
 RUN pip install --upgrade pip && pip install -r /app/requirements.txt
+RUN apt-get install -y postgresql-client
 
 COPY . /app
 RUN chmod +x /app/docker-entrypoint.sh
