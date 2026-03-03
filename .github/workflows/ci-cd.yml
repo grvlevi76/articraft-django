@@ -59,7 +59,7 @@ jobs:
             git clone https://github.com/grvlevi76/articraft-django || true
             cd articraft-django/
             git pull https://github.com/grvlevi76/articraft-django || true 
-            docker-compose up -d --build 
+            docker compose up -d --build 
             
 
 
