@@ -41,6 +41,6 @@ prometheus:
     - web
 
 volumes:
-static_volume:
-media_volume:
-prometheus_data:
+  static_volume:
+  media_volume:
+  prometheus_data:
