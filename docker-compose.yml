@@ -23,6 +23,24 @@ services:
     depends_on:
       - web
 
+prometheus:
+  image: prom/prometheus:latest
+  restart: unless-stopped
+  volumes:
+    - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    - prometheus_data:/prometheus
+  command:
+    - '--config.file=/etc/prometheus/prometheus.yml'
+    - '--storage.tsdb.path=/prometheus'
+    - '--storage.tsdb.retention.time=15d'
+  expose:
+    - "9090"
+  ports:
+    - "9090:9090"
+  depends_on:
+    - web
+
 volumes:
-  static_volume:
-  media_volume:
+static_volume:
+media_volume:
+prometheus_data:
