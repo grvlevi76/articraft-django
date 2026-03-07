@@ -41,6 +41,7 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
+    'django_prometheus',
     'hand_made',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -51,6 +52,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -59,6 +61,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -91,6 +94,15 @@ DATABASES = {
         conn_max_age=600
     )
 }
+
+# Use the Prometheus database engine wrapper to track query performance.
+# We map the standard engines to their Prometheus-wrapped counterparts.
+if DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql':
+    DATABASES['default']['ENGINE'] = 'django_prometheus.db.backends.postgresql'
+elif DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3':
+    DATABASES['default']['ENGINE'] = 'django_prometheus.db.backends.sqlite3'
+elif DATABASES['default']['ENGINE'] == 'django.db.backends.mysql':
+    DATABASES['default']['ENGINE'] = 'django_prometheus.db.backends.mysql'
 
 
 # Password validation

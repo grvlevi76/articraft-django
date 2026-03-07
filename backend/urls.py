@@ -23,6 +23,7 @@ from django.views.static import serve
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include("hand_made.urls")),
+    path('prometheus/', include('django_prometheus.urls')),
 ]
 
 # Serve media files in development and production (using django.views.static.serve as a fallback)

@@ -26,22 +26,22 @@ jobs:
           run: 
             python manage.py test
 
-    docker-build:
-        runs-on: ubuntu-latest
-        needs: test
-        steps:
-        - uses: actions/checkout@v4
+    # docker-build:
+    #     runs-on: ubuntu-latest
+    #     needs: test
+    #     steps:
+    #     - uses: actions/checkout@v4
 
-        - name: login to docker hub
-          uses: docker/login-action@v3
-          with: 
-            username: ${{ secrets.DOCKERHUB_USERNAME }}
-            password: ${{ secrets.DOCKERHUB_TOKEN }}
+    #     - name: login to docker hub
+    #       uses: docker/login-action@v3
+    #       with: 
+    #         username: ${{ secrets.DOCKERHUB_USERNAME }}
+    #         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-        - name: Build and Push Docker image
-          run: |
-            docker build . -t ${{ secrets.DOCKERHUB_USERNAME }}/articraft:latest
-            docker push ${{ secrets.DOCKERHUB_USERNAME }}/articraft:latest
+    #     - name: Build and Push Docker image
+    #       run: |
+    #         docker build . -t ${{ secrets.DOCKERHUB_USERNAME }}/articraft:latest
+    #         docker push ${{ secrets.DOCKERHUB_USERNAME }}/articraft:latest
 
     deploy:
       runs-on: ubuntu-latest
