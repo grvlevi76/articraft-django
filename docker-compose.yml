@@ -51,6 +51,7 @@ services:
 
   loki:
     image: grafana/loki:latest
+    user: root
     ports:
       - "3100:3100"
     command: -config.file=/etc/loki/local-config.yaml
@@ -61,6 +62,7 @@ services:
 
   promtail:
     image: grafana/promtail:latest
+    user: root
     volumes:
       - ./loki/promtail-config.yml:/etc/promtail/config.yml:ro
       - /var/run/docker.sock:/var/run/docker.sock
