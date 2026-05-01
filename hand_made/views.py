@@ -28,7 +28,15 @@ def get_wishlist(request):
 
 def index(request):
     products = Product.objects.filter(available=True)[:8] # Show first 8 products
-    return render(request, "index.html", {'products': products})
+    categories = Category.objects.all()[:4] # Fetch up to 4 categories for the homepage
+    top_reviews = Review.objects.filter(rating__gte=4).order_by('-created_at')[:3] # Fetch latest high-rated reviews
+    
+    context = {
+        'products': products,
+        'categories': categories,
+        'top_reviews': top_reviews,
+    }
+    return render(request, "index.html", context)
 
 def about(request):
     return render(request, "about.html", {})

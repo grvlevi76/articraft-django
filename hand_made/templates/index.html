@@ -156,6 +156,35 @@
   </div>
 </section>
 
+<!-- Shop by Category -->
+{% if categories %}
+<section class="section" style="background: #fafafa;">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title font-display">Shop by Category</h2>
+      <p class="section-subtitle">Find exactly what you're looking for</p>
+    </div>
+    <div class="product-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+      {% for category in categories %}
+      <a href="{% url 'shop' %}?category={{ category.slug }}" class="category-card" style="display: block; text-decoration: none; border-radius: var(--radius-lg); overflow: hidden; position: relative; background: white; box-shadow: var(--shadow-md); transition: transform 0.3s ease;">
+        <div style="height: 200px; background: #e5e5e5; display: flex; align-items: center; justify-content: center; position: relative;">
+          {% if category.image %}
+          <img src="{{ category.image.url }}" alt="{{ category.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+          {% else %}
+          <div style="font-size: 3rem; opacity: 0.3;">📂</div>
+          {% endif %}
+          <div style="position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 100%);"></div>
+        </div>
+        <div style="position: absolute; bottom: 0; left: 0; width: 100%; padding: 1.5rem; color: white;">
+          <h3 style="font-family: 'Playfair Display', serif; font-size: 1.5rem; margin: 0;">{{ category.name }}</h3>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
 <!-- Featured Products -->
 <section class="section">
   <div class="container">
@@ -256,6 +285,63 @@
           artists.</p>
       </div>
     </div>
+  </div>
+</section>
+
+<!-- Customer Testimonials -->
+{% if top_reviews %}
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title font-display">What Our Customers Say</h2>
+      <p class="section-subtitle">Real experiences from our community</p>
+    </div>
+    
+    <div class="product-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+      {% for review in top_reviews %}
+      <div class="review-card" style="background: white; padding: 2rem; border-radius: var(--radius-lg); box-shadow: var(--shadow-md); border: 1px solid var(--border-color);">
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+          <div style="width: 50px; height: 50px; background: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">
+            {{ review.user.username|make_list|first|upper }}
+          </div>
+          <div>
+            <h4 style="margin: 0; font-weight: 600; color: var(--text-main);">{{ review.user.username }}</h4>
+            <div style="color: #F59E0B; font-size: 0.9rem;">
+              {% for i in "12345"|make_list %}
+                {% if forloop.counter <= review.rating %}
+                  <i class="fas fa-star"></i>
+                {% else %}
+                  <i class="far fa-star"></i>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        <h5 style="margin: 0 0 0.5rem 0; font-weight: 600; color: var(--text-main);">{{ review.product.name }}</h5>
+        <p style="color: var(--text-muted); font-style: italic; line-height: 1.6;">"{{ review.comment|truncatewords:25 }}"</p>
+        <div style="margin-top: 1rem; font-size: 0.8rem; color: var(--text-muted);">
+          {{ review.created_at|date:"F j, Y" }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- Newsletter Signup -->
+<section class="section" style="background: var(--primary-color); color: white; text-align: center; border-radius: var(--radius-xl); margin: 2rem auto; max-width: 1000px; padding: 4rem 2rem;">
+  <div class="container">
+    <h2 class="font-display" style="font-size: 2.5rem; margin-bottom: 1rem; color: white;">Join Our Artisan Community</h2>
+    <p style="font-size: 1.1rem; opacity: 0.9; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+      Subscribe to receive updates on new arrivals, artisan stories, and exclusive subscriber-only discounts. No spam, just art.
+    </p>
+    <form class="newsletter-form" style="display: flex; max-width: 500px; margin: 0 auto; gap: 0.5rem;" onsubmit="event.preventDefault(); alert('Thank you for subscribing! This is a demo form.');">
+      <input type="email" placeholder="Your email address" required style="flex-grow: 1; padding: 1rem 1.5rem; border: none; border-radius: var(--radius-md); font-size: 1rem; outline: none;">
+      <button type="submit" style="padding: 1rem 2rem; background: #2D2D2D; color: white; border: none; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; transition: background 0.3s ease;">
+        Subscribe
+      </button>
+    </form>
   </div>
 </section>
 
