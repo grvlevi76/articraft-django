@@ -1,0 +1,584 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block styles %}
+<style>
+  /* === AI STUDIO PAGE === */
+  .studio-hero {
+    text-align: center;
+    padding: 4rem 1rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .studio-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 30% 0%, rgba(139,94,60,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse at 70% 100%, rgba(212,163,115,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .studio-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 1rem;
+    background: linear-gradient(135deg, rgba(139,94,60,0.1), rgba(212,163,115,0.15));
+    border: 1px solid rgba(139,94,60,0.2);
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .studio-badge i { font-size: 0.75rem; }
+  .studio-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 1rem;
+    line-height: 1.15;
+  }
+  .studio-title span {
+    background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .studio-subtitle {
+    font-size: 1.15rem;
+    color: var(--text-muted);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* === GLASS CARDS === */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
+    padding: 2rem;
+    transition: box-shadow 0.3s ease;
+  }
+  .glass-card:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+  }
+
+  /* === STUDIO LAYOUT === */
+  .studio-workspace {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2rem 1rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  .studio-input-row {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 2rem;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .studio-input-row { grid-template-columns: 1fr; }
+  }
+
+  /* === MEMORY TEXTAREA === */
+  .memory-card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-main);
+  }
+  .memory-card-title i { color: var(--primary-color); font-size: 1rem; }
+  .memory-textarea {
+    width: 100%;
+    min-height: 200px;
+    padding: 1.25rem;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: var(--radius-lg);
+    background: rgba(255,255,255,0.5);
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--text-main);
+    resize: vertical;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .memory-textarea::placeholder { color: #bbb; }
+  .memory-textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(139,94,60,0.08);
+  }
+  .char-count {
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.5rem;
+  }
+
+  /* === CUSTOMIZATION PANEL === */
+  .panel-section { margin-bottom: 1.5rem; }
+  .panel-section:last-child { margin-bottom: 0; }
+  .panel-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    margin-bottom: 0.75rem;
+  }
+
+  /* Selectable Icon Grid */
+  .tool-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+  }
+  .tool-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.75rem 0.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: rgba(255,255,255,0.5);
+  }
+  .tool-option:hover { border-color: var(--secondary-color); }
+  .tool-option.active {
+    border-color: var(--primary-color);
+    background: linear-gradient(135deg, rgba(139,94,60,0.06), rgba(212,163,115,0.08));
+  }
+  .tool-option input { display: none; }
+  .tool-option .tool-icon { font-size: 1.3rem; }
+  .tool-option .tool-name { font-size: 0.75rem; font-weight: 600; color: var(--text-main); }
+  .tool-option.active .tool-name { color: var(--primary-color); }
+
+  /* Category Pills */
+  .category-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .category-pill {
+    padding: 0.45rem 1rem;
+    border: 1.5px solid var(--border-color);
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: rgba(255,255,255,0.5);
+    color: var(--text-main);
+  }
+  .category-pill:hover { border-color: var(--secondary-color); }
+  .category-pill.active {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: white;
+  }
+  .category-pill input { display: none; }
+
+  /* === GENERATE BUTTON === */
+  .btn-generate {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 1rem;
+    background: var(--gradient-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(139,94,60,0.25);
+    margin-top: 1.5rem;
+  }
+  .btn-generate:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(139,94,60,0.35);
+  }
+  .btn-generate:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  .btn-generate .spinner {
+    display: none;
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  .btn-generate.loading .spinner { display: block; }
+  .btn-generate.loading .btn-text { display: none; }
+  .btn-generate.loading .btn-loading-text { display: inline; }
+  .btn-generate .btn-loading-text { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* === CONCEPT GALLERY === */
+  .gallery-section {
+    margin-top: 1rem;
+  }
+  .gallery-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+  .gallery-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-main);
+  }
+  .gallery-count {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    background: var(--bg-body);
+    padding: 0.3rem 0.75rem;
+    border-radius: 9999px;
+  }
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+  .concept-card {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    background: white;
+    transition: all 0.3s ease;
+  }
+  .concept-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+  .concept-image {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    background: #f5f5f5;
+    display: block;
+  }
+  .concept-body { padding: 1rem; }
+  .concept-body h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem 0;
+  }
+  .concept-body p {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin: 0 0 0.75rem 0;
+  }
+  .btn-select-concept {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.6rem;
+    background: transparent;
+    color: var(--primary-color);
+    border: 1.5px solid var(--primary-color);
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .btn-select-concept:hover {
+    background: var(--primary-color);
+    color: white;
+  }
+
+  /* Empty gallery state */
+  .gallery-empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(255,255,255,0.4);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-xl);
+  }
+  .gallery-empty .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+  }
+  .gallery-empty h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-main);
+  }
+  .gallery-empty p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  /* === MOBILE === */
+  @media (max-width: 640px) {
+    .studio-title { font-size: 2.25rem; }
+    .studio-subtitle { font-size: 1rem; }
+    .tool-grid { grid-template-columns: repeat(4, 1fr); }
+    .gallery-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="studio-hero">
+  <span class="studio-badge"><i class="fas fa-sparkles"></i> Experimental Feature</span>
+  <h1 class="studio-title">AI Memory <span>Studio</span></h1>
+  <p class="studio-subtitle">
+    Describe a memory, and let our AI design a custom masterpiece for you — crafted from your story into a real handmade keepsake.
+  </p>
+</section>
+
+<!-- Workspace -->
+<div class="studio-workspace">
+
+  <div class="studio-input-row">
+    <!-- Memory Input -->
+    <div class="glass-card">
+      <div class="memory-card-title">
+        <i class="fas fa-feather-alt"></i> Your Memory
+      </div>
+      <textarea class="memory-textarea" id="memory-input"
+        placeholder="Tell us your memory...&#10;&#10;Example: 'The summer evening my grandfather taught me to carve wood on his old bench, with the smell of cedar shavings in the air and golden sunlight through the workshop window...'"></textarea>
+      <div class="char-count"><span id="char-count">0</span> / 500 characters</div>
+    </div>
+
+    <!-- Customization Panel -->
+    <div class="glass-card">
+      <div class="memory-card-title">
+        <i class="fas fa-sliders-h"></i> Customize
+      </div>
+
+      <!-- Tool Selection -->
+      <div class="panel-section">
+        <div class="panel-label">Craft Medium</div>
+        <div class="tool-grid" id="tool-grid">
+          <label class="tool-option active" onclick="selectTool(this)">
+            <input type="radio" name="tool" value="resin" checked>
+            <span class="tool-icon">🫧</span>
+            <span class="tool-name">Resin</span>
+          </label>
+          <label class="tool-option" onclick="selectTool(this)">
+            <input type="radio" name="tool" value="woodwork">
+            <span class="tool-icon">🪵</span>
+            <span class="tool-name">Woodwork</span>
+          </label>
+          <label class="tool-option" onclick="selectTool(this)">
+            <input type="radio" name="tool" value="clay">
+            <span class="tool-icon">🏺</span>
+            <span class="tool-name">Clay</span>
+          </label>
+          <label class="tool-option" onclick="selectTool(this)">
+            <input type="radio" name="tool" value="glass">
+            <span class="tool-icon">✨</span>
+            <span class="tool-name">Glass</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Product Category -->
+      <div class="panel-section">
+        <div class="panel-label">Product Type</div>
+        <div class="category-pills" id="category-pills">
+          <label class="category-pill active" onclick="selectCategory(this)">
+            <input type="radio" name="category" value="frame" checked>
+            Frame
+          </label>
+          <label class="category-pill" onclick="selectCategory(this)">
+            <input type="radio" name="category" value="keychain">
+            Keychain
+          </label>
+          <label class="category-pill" onclick="selectCategory(this)">
+            <input type="radio" name="category" value="wallclock">
+            Wall Clock
+          </label>
+          <label class="category-pill" onclick="selectCategory(this)">
+            <input type="radio" name="category" value="plate">
+            Plate
+          </label>
+          <label class="category-pill" onclick="selectCategory(this)">
+            <input type="radio" name="category" value="wallhanging">
+            Wall Hanging
+          </label>
+          <label class="category-pill" onclick="selectCategory(this)">
+            <input type="radio" name="category" value="card">
+            Card
+          </label>
+        </div>
+      </div>
+
+      <!-- Generate Button -->
+      <button class="btn-generate" id="btn-generate" onclick="generateConcepts()">
+        <div class="spinner"></div>
+        <span class="btn-text"><i class="fas fa-wand-magic-sparkles"></i> Generate Concept</span>
+        <span class="btn-loading-text">Creating your vision...</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Concept Gallery -->
+  <div class="gallery-section" id="gallery-section">
+    <div class="gallery-header">
+      <h2 class="gallery-title">Your Concepts</h2>
+      <span class="gallery-count" id="gallery-count" style="display:none;">0 designs</span>
+    </div>
+
+    <div id="gallery-content">
+      <!-- Empty State -->
+      <div class="gallery-empty" id="gallery-empty">
+        <div class="empty-icon">🎨</div>
+        <h3>No concepts yet</h3>
+        <p>Describe your memory and hit generate to see AI-crafted designs appear here.</p>
+      </div>
+    </div>
+
+    <!-- Gallery Grid (hidden until generation) -->
+    <div class="gallery-grid" id="gallery-grid" style="display: none;"></div>
+  </div>
+
+</div>
+
+<script>
+  // Character counter
+  const memoryInput = document.getElementById('memory-input');
+  const charCount = document.getElementById('char-count');
+  memoryInput.addEventListener('input', function() {
+    const len = this.value.length;
+    charCount.textContent = len;
+    if (len > 500) charCount.style.color = '#ef4444';
+    else charCount.style.color = 'var(--text-muted)';
+  });
+
+  // Tool selection
+  function selectTool(el) {
+    document.querySelectorAll('#tool-grid .tool-option').forEach(o => o.classList.remove('active'));
+    el.classList.add('active');
+    el.querySelector('input').checked = true;
+  }
+
+  // Category selection
+  function selectCategory(el) {
+    document.querySelectorAll('#category-pills .category-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    el.querySelector('input').checked = true;
+  }
+
+  // Placeholder concept images (Unsplash handcraft photos)
+  const placeholderImages = [
+    'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=400&q=80',
+    'https://images.unsplash.com/photo-1459411552884-841db9b3cc2a?w=400&q=80',
+    'https://images.unsplash.com/photo-1493106641515-6b5631de4bb9?w=400&q=80',
+    'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400&q=80',
+  ];
+
+  // Simulate generate
+  function generateConcepts() {
+    const memory = memoryInput.value.trim();
+    if (!memory) {
+      memoryInput.focus();
+      memoryInput.style.borderColor = '#ef4444';
+      setTimeout(() => { memoryInput.style.borderColor = ''; }, 2000);
+      return;
+    }
+
+    const btn = document.getElementById('btn-generate');
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    // Simulate API delay
+    setTimeout(() => {
+      btn.classList.remove('loading');
+      btn.disabled = false;
+
+      const tool = document.querySelector('input[name="tool"]:checked').value;
+      const category = document.querySelector('input[name="category"]:checked').value;
+
+      // Show gallery
+      document.getElementById('gallery-empty').style.display = 'none';
+      const grid = document.getElementById('gallery-grid');
+      grid.style.display = 'grid';
+      grid.innerHTML = '';
+
+      const concepts = [
+        { title: `${capitalize(tool)} ${capitalize(category)} — Warm Tones`, desc: 'Inspired by golden hour warmth' },
+        { title: `${capitalize(tool)} ${capitalize(category)} — Nature`, desc: 'Organic textures and earthy feel' },
+        { title: `${capitalize(tool)} ${capitalize(category)} — Minimal`, desc: 'Clean lines, focused emotion' },
+        { title: `${capitalize(tool)} ${capitalize(category)} — Vintage`, desc: 'Aged character with nostalgia' },
+      ];
+
+      concepts.forEach((c, i) => {
+        const card = document.createElement('div');
+        card.className = 'concept-card';
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.innerHTML = `
+          <img src="${placeholderImages[i]}" class="concept-image" alt="${c.title}">
+          <div class="concept-body">
+            <h4>${c.title}</h4>
+            <p>${c.desc}</p>
+            <button class="btn-select-concept" onclick="selectConcept(this, '${c.title}')">
+              <i class="fas fa-paper-plane"></i> Send to Artisan
+            </button>
+          </div>
+        `;
+        grid.appendChild(card);
+        // Staggered animation
+        setTimeout(() => {
+          card.style.transition = 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+          card.style.opacity = '1';
+          card.style.transform = 'translateY(0)';
+        }, 100 * i);
+      });
+
+      // Update count
+      const countEl = document.getElementById('gallery-count');
+      countEl.textContent = `${concepts.length} designs`;
+      countEl.style.display = 'inline-block';
+
+      // Scroll to gallery
+      document.getElementById('gallery-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 2500);
+  }
+
+  function selectConcept(btn, title) {
+    btn.innerHTML = '<i class="fas fa-check"></i> Request Sent!';
+    btn.style.background = 'var(--primary-color)';
+    btn.style.color = 'white';
+    btn.style.borderColor = 'var(--primary-color)';
+    btn.disabled = true;
+  }
+
+  function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+</script>
+
+{% endblock %}

@@ -41,6 +41,9 @@ def index(request):
 def about(request):
     return render(request, "about.html", {})
 
+def ai_studio(request):
+    return render(request, "ai_studio.html", {})
+
 def shop(request):
     category_slug = request.GET.get('category')
     search_query = request.GET.get('q')
