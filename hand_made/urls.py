@@ -35,6 +35,8 @@ urlpatterns = [
     path('orders/', views.orders_view, name='orders'),
     path('settings/', views.settings_view, name='settings'),
     path('review/delete/<int:review_id>/', views.delete_review, name='delete_review'),
+    path('api/search/', views.search_api, name='search_api'),
+    path('password_change/', views.change_password, name='change_password'),
 ]
 
 if settings.DEBUG:

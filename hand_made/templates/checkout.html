@@ -209,15 +209,82 @@
                 </div>
 
                 <h2 class="section-title" style="margin-top: 2rem;">
-                    <i class="fas fa-credit-card"></i> Payment Details
+                    <i class="fas fa-credit-card"></i> Payment Method
                 </h2>
-                <div class="form-group full-width">
-                    <label class="form-label">Select Payment Method</label>
-                    <select name="payment_method" class="form-input" style="height: auto;">
-                        <option value="COD">Cash on Delivery (COD)</option>
-                        <option value="Online">Online Payment (Card/UPI/NetBanking)</option>
-                    </select>
+
+                <style>
+                    .payment-options { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 1.5rem; }
+                    .payment-option {
+                        display: flex; align-items: center; gap: 1rem;
+                        padding: 1.25rem 1.5rem; border: 2px solid var(--border-color);
+                        border-radius: var(--radius-lg); cursor: pointer;
+                        transition: all 0.3s ease; position: relative;
+                    }
+                    .payment-option:hover { border-color: var(--secondary-color); }
+                    .payment-option.selected {
+                        border-color: var(--primary-color);
+                        background: linear-gradient(135deg, rgba(139,94,60,0.04) 0%, rgba(212,163,115,0.06) 100%);
+                    }
+                    .payment-option input[type="radio"] { display: none; }
+                    .payment-radio {
+                        width: 22px; height: 22px; border-radius: 50%;
+                        border: 2px solid var(--border-color); flex-shrink: 0;
+                        display: flex; align-items: center; justify-content: center;
+                        transition: all 0.3s ease;
+                    }
+                    .payment-option.selected .payment-radio {
+                        border-color: var(--primary-color); background: var(--primary-color);
+                    }
+                    .payment-radio::after {
+                        content: ''; width: 8px; height: 8px; border-radius: 50%;
+                        background: white; opacity: 0; transition: opacity 0.2s ease;
+                    }
+                    .payment-option.selected .payment-radio::after { opacity: 1; }
+                    .payment-icon {
+                        width: 48px; height: 48px; border-radius: var(--radius-md);
+                        display: flex; align-items: center; justify-content: center;
+                        font-size: 1.25rem; flex-shrink: 0;
+                    }
+                    .payment-icon.cod { background: #fef3c7; color: #d97706; }
+                    .payment-icon.online { background: #dbeafe; color: #2563eb; }
+                    .payment-details h4 { font-size: 1rem; font-weight: 600; margin: 0 0 0.15rem 0; }
+                    .payment-details p { font-size: 0.85rem; color: var(--text-muted); margin: 0; }
+                    .payment-badge {
+                        position: absolute; top: 0.75rem; right: 0.75rem;
+                        font-size: 0.7rem; font-weight: 600; padding: 0.15rem 0.5rem;
+                        border-radius: 9999px; background: #dbeafe; color: #2563eb;
+                    }
+                </style>
+
+                <div class="payment-options">
+                    <label class="payment-option selected" onclick="selectPayment(this)">
+                        <input type="radio" name="payment_method" value="COD" checked>
+                        <div class="payment-radio"></div>
+                        <div class="payment-icon cod"><i class="fas fa-money-bill-wave"></i></div>
+                        <div class="payment-details">
+                            <h4>Cash on Delivery</h4>
+                            <p>Pay when you receive your order</p>
+                        </div>
+                    </label>
+                    <label class="payment-option" onclick="selectPayment(this)">
+                        <input type="radio" name="payment_method" value="Online">
+                        <div class="payment-radio"></div>
+                        <div class="payment-icon online"><i class="fas fa-globe"></i></div>
+                        <div class="payment-details">
+                            <h4>Online Payment</h4>
+                            <p>Card, UPI, or Net Banking</p>
+                        </div>
+                        <span class="payment-badge">Coming Soon</span>
+                    </label>
                 </div>
+                <script>
+                function selectPayment(el) {
+                    document.querySelectorAll('.payment-option').forEach(o => o.classList.remove('selected'));
+                    el.classList.add('selected');
+                    el.querySelector('input[type="radio"]').checked = true;
+                }
+                </script>
+
                 <div class="form-group full-width">
                     <div
                         style="padding: 1rem; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: var(--radius-md); color: #166534; font-size: 0.9rem;">

@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib.auth.decorators import login_required
@@ -132,6 +132,10 @@ def add_to_cart(request, product_id):
     if not created:
         cart_item.quantity += 1
         cart_item.save()
+    # AJAX request — return JSON instead of redirect
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        cart_count = sum(item.quantity for item in cart.items.all())
+        return JsonResponse({'success': True, 'cart_count': cart_count, 'product_name': product.name})
     return redirect('cart')
 
 def remove_from_cart(request, item_id):
@@ -253,3 +257,35 @@ def settings_view(request):
         user.save()
         return redirect('account')
     return render(request, "settings.html", {})
+
+def search_api(request):
+    q = request.GET.get('q', '').strip()
+    results = []
+    if q:
+        products = Product.objects.filter(
+            Q(name__icontains=q) | Q(description__icontains=q),
+            available=True
+        )[:5]
+        for p in products:
+            results.append({
+                'name': p.name,
+                'slug': p.slug,
+                'price': str(p.price),
+                'image': p.image.url if p.image else '',
+                'category': p.category.name,
+            })
+    return JsonResponse({'results': results})
+
+@login_required
+def change_password(request):
+    from django.contrib.auth.forms import PasswordChangeForm
+    from django.contrib.auth import update_session_auth_hash
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            return redirect('account')
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, 'change_password.html', {'form': form})

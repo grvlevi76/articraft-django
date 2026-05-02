@@ -20,6 +20,82 @@
   <!-- Custom CSS -->
   <link rel="stylesheet" href="{% static 'hand_made/style.css' %}">
 
+  <style>
+    /* === LIVE SEARCH DROPDOWN === */
+    .search-wrapper { position: relative; }
+    .search-results {
+      position: absolute; top: 100%; left: 0; right: 0;
+      background: white; border: 1px solid var(--border-color);
+      border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
+      z-index: 9999; max-height: 350px; overflow-y: auto;
+      display: none; margin-top: 0.25rem;
+    }
+    .search-results.active { display: block; }
+    .search-result-item {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.75rem 1rem; text-decoration: none; color: var(--text-main);
+      transition: background 0.2s ease; border-bottom: 1px solid #f5f5f5;
+    }
+    .search-result-item:last-child { border-bottom: none; }
+    .search-result-item:hover { background: #fafaf9; }
+    .search-result-img {
+      width: 40px; height: 40px; border-radius: var(--radius-sm);
+      object-fit: cover; background: #f5f5f5; flex-shrink: 0;
+    }
+    .search-result-info h4 { font-size: 0.85rem; font-weight: 600; margin: 0; }
+    .search-result-info span { font-size: 0.75rem; color: var(--text-muted); }
+    .search-no-results {
+      padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;
+    }
+
+    /* === PROFILE DROPDOWN === */
+    .profile-dropdown { position: relative; }
+    .profile-dropdown .dropdown-menu {
+      position: absolute; top: 100%; right: 0;
+      background: white; border: 1px solid var(--border-color);
+      border-radius: var(--radius-md); box-shadow: var(--shadow-lg);
+      min-width: 200px; z-index: 9999;
+      opacity: 0; visibility: hidden; transform: translateY(8px);
+      transition: all 0.2s ease; margin-top: 0.5rem;
+    }
+    .profile-dropdown:hover .dropdown-menu,
+    .profile-dropdown .dropdown-menu.active {
+      opacity: 1; visibility: visible; transform: translateY(0);
+    }
+    .dropdown-menu a {
+      display: flex; align-items: center; gap: 0.75rem;
+      padding: 0.75rem 1.25rem; color: var(--text-main);
+      text-decoration: none; font-size: 0.9rem; transition: background 0.2s ease;
+    }
+    .dropdown-menu a:hover { background: #fafaf9; color: var(--primary-color); }
+    .dropdown-menu a i { width: 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; }
+    .dropdown-menu a:hover i { color: var(--primary-color); }
+    .dropdown-divider { height: 1px; background: var(--border-color); margin: 0.25rem 0; }
+    .dropdown-menu .dropdown-user {
+      padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border-color);
+    }
+    .dropdown-menu .dropdown-user strong { display: block; font-size: 0.9rem; }
+    .dropdown-menu .dropdown-user span { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* === TOAST NOTIFICATION === */
+    .toast-container {
+      position: fixed; bottom: 2rem; right: 2rem; z-index: 99999;
+      display: flex; flex-direction: column; gap: 0.5rem;
+    }
+    .toast {
+      display: flex; align-items: center; gap: 0.75rem;
+      background: white; border: 1px solid var(--border-color);
+      border-left: 4px solid #22c55e; border-radius: var(--radius-md);
+      padding: 1rem 1.5rem; box-shadow: var(--shadow-xl);
+      transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      min-width: 280px;
+    }
+    .toast.show { transform: translateX(0); }
+    .toast-icon { color: #22c55e; font-size: 1.25rem; }
+    .toast-body h4 { font-size: 0.9rem; font-weight: 600; margin: 0; }
+    .toast-body p { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+  </style>
+
   {% block styles %}{% endblock %}
 </head>
 
@@ -50,25 +126,40 @@
 
         <!-- Right Side: Search & Icons -->
         <div class="nav-icons">
-          <!-- Search Bar -->
-          <form action="{% url 'shop' %}" method="GET" class="nav-search">
+          <!-- Live Search Bar -->
+          <div class="nav-search search-wrapper">
             <i class="fas fa-search"></i>
-            <input type="text" name="q" placeholder="Search products..." value="{{ request.GET.q|default:'' }}">
-          </form>
+            <input type="text" id="live-search-input" placeholder="Search products..." autocomplete="off">
+            <div class="search-results" id="search-results"></div>
+          </div>
 
           <!-- Cart -->
           <a href="{% url 'cart' %}" class="icon-btn" title="Cart">
             <i class="fas fa-shopping-bag"></i>
-            {% if cart_count %}
-            <span class="cart-badge">{{ cart_count }}</span>
-            {% endif %}
+            <span class="cart-badge" id="cart-badge" style="{% if not cart_count %}display:none{% endif %}">{{ cart_count|default:"0" }}</span>
           </a>
 
           <!-- User Account -->
           {% if user.is_authenticated %}
-          <a href="{% url 'account' %}" class="icon-btn" title="Dashboard">
-            <i class="far fa-user"></i>
-          </a>
+          <div class="profile-dropdown">
+            <a href="#" class="icon-btn" title="My Account" onclick="return false;">
+              <i class="far fa-user"></i>
+            </a>
+            <div class="dropdown-menu">
+              <div class="dropdown-user">
+                <strong>{{ user.get_full_name|default:user.username }}</strong>
+                <span>{{ user.email }}</span>
+              </div>
+              <a href="{% url 'account' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+              <a href="{% url 'orders' %}"><i class="fas fa-box"></i> My Orders</a>
+              <a href="{% url 'wishlist' %}"><i class="fas fa-heart"></i> Wishlist</a>
+              <div class="dropdown-divider"></div>
+              <a href="{% url 'change_password' %}"><i class="fas fa-key"></i> Change Password</a>
+              <a href="{% url 'settings' %}"><i class="fas fa-cog"></i> Settings</a>
+              <div class="dropdown-divider"></div>
+              <a href="{% url 'logout' %}" style="color: #ef4444;"><i class="fas fa-sign-out-alt" style="color: #ef4444;"></i> Logout</a>
+            </div>
+          </div>
           {% else %}
           <a href="{% url 'login' %}" class="btn-primary" style="padding: 0.4rem 1.2rem; font-size: 0.9rem;">Login</a>
           {% endif %}
@@ -82,6 +173,9 @@
     {% block content %}
     {% endblock %}
   </main>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
 
   <!-- Footer -->
   <footer>
@@ -134,6 +228,103 @@
       </div>
     </div>
   </footer>
+
+  <script>
+  // === LIVE SEARCH ===
+  (function() {
+    const input = document.getElementById('live-search-input');
+    const resultsBox = document.getElementById('search-results');
+    let debounceTimer;
+
+    if (!input) return;
+
+    input.addEventListener('input', function() {
+      clearTimeout(debounceTimer);
+      const q = this.value.trim();
+      if (q.length < 2) { resultsBox.classList.remove('active'); return; }
+
+      debounceTimer = setTimeout(() => {
+        fetch(`/api/search/?q=${encodeURIComponent(q)}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+          .then(r => r.json())
+          .then(data => {
+            if (data.results.length === 0) {
+              resultsBox.innerHTML = '<div class="search-no-results">No products found</div>';
+            } else {
+              resultsBox.innerHTML = data.results.map(p => `
+                <a href="/product/${p.slug}/" class="search-result-item">
+                  ${p.image ? `<img src="${p.image}" class="search-result-img" alt="">` : '<div class="search-result-img" style="display:flex;align-items:center;justify-content:center;">🎨</div>'}
+                  <div class="search-result-info">
+                    <h4>${p.name}</h4>
+                    <span>${p.category} · ₹${p.price}</span>
+                  </div>
+                </a>
+              `).join('');
+            }
+            resultsBox.classList.add('active');
+          });
+      }, 300);
+    });
+
+    // Submit full search on Enter
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const q = this.value.trim();
+        if (q) window.location.href = `/shop/?q=${encodeURIComponent(q)}`;
+      }
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.search-wrapper')) resultsBox.classList.remove('active');
+    });
+  })();
+
+  // === AJAX ADD TO CART + TOAST ===
+  (function() {
+    function showToast(name) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.innerHTML = `
+        <div class="toast-icon"><i class="fas fa-check-circle"></i></div>
+        <div class="toast-body">
+          <h4>Added to Cart</h4>
+          <p>${name}</p>
+        </div>
+      `;
+      container.appendChild(toast);
+      // trigger animation
+      requestAnimationFrame(() => { toast.classList.add('show'); });
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+      }, 3000);
+    }
+
+    document.addEventListener('click', function(e) {
+      const btn = e.target.closest('.btn-add-cart');
+      if (!btn) return;
+      e.preventDefault();
+      const url = btn.getAttribute('href');
+
+      fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            // Update badge
+            const badge = document.getElementById('cart-badge');
+            if (badge) {
+              badge.textContent = data.cart_count;
+              badge.style.display = 'flex';
+            }
+            showToast(data.product_name);
+          }
+        })
+        .catch(() => { window.location.href = url; }); // fallback
+    });
+  })();
+  </script>
 
 </body>
 
